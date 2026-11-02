@@ -1,0 +1,138 @@
+<style>
+  /* ---------- Night Sky: chart ---------- */
+  .ns-chart { position: relative; flex: none; }
+  .ns-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .ns-chart .ns-lines { fill: none; stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+  .ns-chart .ns-ecl { fill: none; stroke: #fff; stroke-width: 1px; stroke-dasharray: 2 5; vector-effect: non-scaling-stroke; }
+  .ns-chart .ns-grid { fill: none; stroke: #fff; stroke-width: 1px; stroke-dasharray: 1 7; vector-effect: non-scaling-stroke; }
+  .ns-chart .ns-star { fill: none; stroke: #fff; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .ns-chart .ns-ring { fill: none; stroke: #000; vector-effect: non-scaling-stroke; }
+  .ns-chart .ns-planet { fill: #fff; stroke: #000; stroke-width: 2px; vector-effect: non-scaling-stroke; }
+  .ns-chart .ns-planet-halo { fill: none; stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+
+  .ns-tag { position: absolute; line-height: 1; white-space: nowrap; color: #fff; background: #000; padding: 1px 2px;
+            font-family: var(--description-font-family); font-size: var(--description-font-size); -webkit-font-smoothing: none; }
+  .ns-tag--r { transform: translate(5px, -50%); }
+  .ns-tag--l { transform: translate(calc(-100% - 5px), -50%); }
+  .ns-tag--c { transform: translate(-50%, -50%); }
+  .ns-tag--t { transform: translate(-50%, calc(-100% - 6px)); }
+  .ns-tag--b { transform: translate(-50%, 6px); }
+  .ns-tag--con { letter-spacing: 1px; }
+  .ns-tag--planet, .ns-tag--moon { font-family: var(--label-font-family); font-size: var(--label-font-size); font-weight: 700; }
+  .ns-compass { position: absolute; transform: translate(-50%, -50%); color: #fff; background: #000; padding: 0 1px;
+                font-family: var(--label-font-family); font-size: var(--label-font-size); font-weight: 700;
+                -webkit-font-smoothing: none; line-height: 1; }
+
+  /* ---------- Night Sky: panel ---------- */
+  .ns-row { display: flex; align-items: center; gap: 10px; }
+  .ns-col { display: flex; flex-direction: column; min-width: 0; }
+  .ns-grow { flex: 1 1 auto; min-width: 0; }
+  .ns-score { font-family: "NicoBold", "Inter", sans-serif; }
+  .ns-bar { display: flex; gap: 3px; }
+  .ns-bar i { display: block; width: 14px; height: 10px; border: 2px solid #000; }
+  .ns-bar i.on { background: #000; }
+  .ns-times { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 2px 8px; }
+  .ns-hr { border-top: 2px solid #000; margin: 6px 0; }
+  .ns-hr--dot { border-top: 2px dotted #000; }
+  .ns-planets { display: grid; grid-template-columns: auto auto 1fr; gap: 3px 10px; align-items: baseline; }
+  .ns-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ns-hl { display: flex; gap: 6px; align-items: center; }
+  .ns-hl svg { flex: none; }
+</style>
+
+{% comment %}
+  Star chart partial.
+    chart  : the `chart` object from the backend
+    px     : rendered diameter in CSS px (sets pattern + marker scale)
+    sizes  : comma list of star dot widths (px) for the 6 magnitude buckets
+    tags   : "all" | "planets" | "none"  which labels to draw
+    compass: true/false  draw N/E/S/W around the rim
+{% endcomment %}
+{% template sky_chart %}
+{% assign u = 1000.0 | divided_by: px %}
+{% assign w = sizes | split: "," %}
+{% assign tile = u | times: 3 %}
+{% assign tile2 = u | times: 2 %}
+{% assign pr = u | times: 4.5 %}
+{% assign mr = u | times: 9 %}
+{% if px < 300 %}{% assign mr = u | times: 7 %}{% endif %}
+{% assign ms = mr | divided_by: 100.0 %}
+<div class="ns-chart" style="width: {{ px }}px; height: {{ px }}px;">
+  <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+    <defs>
+      <clipPath id="ns-clip-{{ px }}"><circle cx="500" cy="500" r="480"/></clipPath>
+      <pattern id="ns-mw1-{{ px }}" width="{{ tile }}" height="{{ tile }}" patternUnits="userSpaceOnUse">
+        <rect width="{{ u }}" height="{{ u }}" fill="#fff"/>
+      </pattern>
+      <pattern id="ns-mw2-{{ px }}" width="{{ tile2 }}" height="{{ tile2 }}" patternUnits="userSpaceOnUse">
+        <rect width="{{ u }}" height="{{ u }}" fill="#fff"/>
+      </pattern>
+    </defs>
+    <circle cx="500" cy="500" r="480" fill="#000"/>
+    <g clip-path="url(#ns-clip-{{ px }})">
+      {% if px >= 300 %}
+      <path d="{{ chart.milky_faint }}" fill="url(#ns-mw1-{{ px }})" fill-rule="evenodd"/>
+      <path d="{{ chart.milky_bright }}" fill="url(#ns-mw2-{{ px }})" fill-rule="evenodd"/>
+      {% endif %}
+      <circle class="ns-grid" cx="500" cy="500" r="277"/>
+      <circle class="ns-grid" cx="500" cy="500" r="129"/>
+      <path class="ns-ecl" d="{{ chart.ecliptic }}"/>
+      <path class="ns-lines" d="{{ chart.lines }}"/>
+      {% for d in chart.stars %}{% assign sw = w[forloop.index0] %}{% if sw != "0" %}
+      <path class="ns-star" stroke-width="{{ sw }}" d="{{ d }}"/>{% endif %}{% endfor %}
+      {% if chart.sun.up %}
+      <circle cx="{{ chart.sun.x }}" cy="{{ chart.sun.y }}" r="{{ mr }}" fill="#fff"/>
+      {% endif %}
+      {% for p in chart.planets %}
+      <circle class="ns-planet-halo" cx="{{ p.x }}" cy="{{ p.y }}" r="{{ pr | times: 1.9 }}"/>
+      <circle class="ns-planet" cx="{{ p.x }}" cy="{{ p.y }}" r="{{ pr }}"/>
+      {% endfor %}
+      {% if chart.moon.up %}
+      <g transform="translate({{ chart.moon.x }} {{ chart.moon.y }}) scale({{ chart.moon.flip | times: ms }} {{ ms }})">
+        <circle r="112" fill="#000"/>
+        <circle r="100" fill="#000" stroke="#fff" stroke-width="12"/>
+        <path d="{{ chart.moon.glyph }}" fill="#fff"/>
+      </g>
+      {% endif %}
+    </g>
+    <circle class="ns-ring" cx="500" cy="500" r="481" stroke-width="2px"/>
+  </svg>
+  {% if tags != "none" %}
+  {% for t in chart.tags %}{% if tags == "all" or t.kind == "planet" or t.kind == "moon" %}
+  <span class="ns-tag ns-tag--{{ t.kind }} ns-tag--{{ t.side }}" style="left: {{ t.x }}%; top: {{ t.y }}%;">{{ t.text }}</span>
+  {% endif %}{% endfor %}
+  {% endif %}
+  {% if compass %}
+  <span class="ns-compass" style="left: 50%; top: 4%;">N</span>
+  <span class="ns-compass" style="left: 50%; top: 96%;">S</span>
+  <span class="ns-compass" style="left: 4%; top: 50%;">E</span>
+  <span class="ns-compass" style="left: 96%; top: 50%;">W</span>
+  {% endif %}
+</div>
+{% endtemplate %}
+
+{% comment %} Moon phase glyph for white backgrounds: dark disc, white lit part. {% endcomment %}
+{% template moon_icon %}
+{% assign s = size | divided_by: 210.0 %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="-105 -105 210 210" xmlns="http://www.w3.org/2000/svg">
+  <g transform="scale({{ moon.flip }} 1)">
+    <circle r="100" fill="#000"/>
+    <path d="{{ moon.glyph }}" fill="#fff"/>
+    <circle r="100" fill="none" stroke="#000" stroke-width="6"/>
+  </g>
+</svg>
+{% endtemplate %}
+
+{% template score_bar %}
+<div class="ns-bar">{% for i in (1..10) %}<i{% if i <= value %} class="on"{% endif %}></i>{% endfor %}</div>
+{% endtemplate %}
+
+{% template hl_icon %}
+{% if icon == "meteor" %}
+<svg width="16" height="16" viewBox="0 0 16 16"><path d="M1 1 L10 10" stroke="#000" stroke-width="2"/><path d="M5 1 L11 7" stroke="#000" stroke-width="1"/><circle cx="12" cy="12" r="3" fill="#000"/></svg>
+{% elsif icon == "moon" %}
+<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="#000" stroke-width="2"/><path d="M8 1.5 A6.5 6.5 0 0 1 8 14.5 Z" fill="#000"/></svg>
+{% else %}
+<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="5" cy="9" r="4" fill="#000"/><circle cx="12" cy="5" r="2.5" fill="none" stroke="#000" stroke-width="2"/></svg>
+{% endif %}
+{% endtemplate %}

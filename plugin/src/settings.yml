@@ -1,0 +1,52 @@
+---
+name: Night Sky
+description: A live star chart for your exact location, plus tonight's stargazing forecast - darkness window, moon phase, visible planets, meteor showers and cloud cover.
+strategy: polling
+# Point this at your deployed backend (see README). Field values are interpolated.
+polling_url: https://YOUR-BACKEND-HOST/sky?loc={{ lat_lon }}&label={{ place_label | url_encode }}&mode={{ chart_mode }}&clock={{ clock }}&clouds={{ clouds }}
+polling_verb: get
+polling_headers: ''
+refresh_interval: 30
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest
+custom_fields:
+- keyname: about
+  name: About This Plugin
+  field_type: author_bio
+  category: science,lifestyle
+  description: Night Sky draws the sky above you right now - 2,300 stars, constellation figures, the Milky Way, planets and the Moon - and tells you whether tonight is worth going outside. No API keys needed.
+- keyname: lat_lon
+  field_type: lat_lon
+  name: Location
+  description: Search for a city or postal code, or provide a comma-separated lat/long.
+- keyname: place_label
+  field_type: string
+  name: Place name
+  description: Shown in the title bar.
+  placeholder: Back garden
+  optional: true
+- keyname: chart_mode
+  field_type: select
+  name: Chart time
+  description: During daylight, show tonight's sky instead of the (invisible) daytime stars.
+  options:
+  - Tonight when it's light out: auto
+  - Always right now: now
+  default: auto
+- keyname: clock
+  field_type: select
+  name: Clock
+  options:
+  - 24-hour: '24'
+  - 12-hour: '12'
+  default: '24'
+- keyname: clouds
+  field_type: select
+  name: Cloud forecast
+  description: Factor Open-Meteo cloud cover into the stargazing score.
+  options:
+  - 'Yes': 'yes'
+  - 'No': 'no'
+  default: 'yes'

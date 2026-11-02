@@ -1,0 +1,19 @@
+# trmnlp dev-server config (https://github.com/usetrmnl/trmnlp) - not uploaded to TRMNL
+---
+watch:
+  - .trmnlp.yml
+  - src
+
+# values for the custom fields defined in src/settings.yml
+custom_fields:
+  lat_lon: "51.4779,-0.0015"
+  place_label: "Greenwich"
+  chart_mode: "auto"
+  clock: "24"
+  clouds: "yes"
+
+# trmnlp fetches data from polling_url in src/settings.yml. For local work run
+# `python3 ../backend/server.py` and temporarily set the host to localhost:8080,
+# or use ../tools/preview.py which renders straight from the backend.
+variables:
+  trmnl: {}

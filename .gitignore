@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+tools/.cache/
+preview/
+plugin/_build/
+.venv/

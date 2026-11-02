@@ -1,0 +1,47 @@
+{% if meta %}
+<div class="layout layout--row layout--left gap--medium">
+  {% render "sky_chart", chart: chart, px: 196, sizes: "5,4,3,2,1,0", tags: "none", compass: false %}
+
+  <div class="ns-col ns-grow">
+    <div class="ns-row">
+      <span class="value value--large value--tnums ns-score">{{ score.value }}<span class="value value--xsmall">/10</span></span>
+      <div class="ns-col ns-grow">
+        <span class="title title--small">{{ score.verdict }} night</span>
+        {% render "score_bar", value: score.value %}
+        <span class="description">{% if score.clouds != nil %}{{ score.clouds }}% clouds · {% endif %}dark {{ sun.dusk | default: "—" }}–{{ sun.dawn | default: "—" }}</span>
+      </div>
+    </div>
+    <div class="ns-hr ns-hr--dot"></div>
+    <div class="ns-row">
+      {% render "moon_icon", moon: moon, size: 36 %}
+      <div class="ns-col ns-grow">
+        <span class="title title--small">{{ moon.phase }} · {{ moon.illum }}%</span>
+        <span class="description ns-ellipsis">{% if score.moon_free %}Moon-free {{ score.moon_free }}{% else %}Moonlit all night{% endif %}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ns-col ns-grow">
+    <span class="label label--small label--underline">Planets tonight</span>
+    {% if visible_count > 0 %}
+    <div class="ns-planets">
+      {% for p in visible limit: 4 %}
+      <span class="title title--small">{{ p.name }}</span>
+      <span class="label label--small label--outline">{{ p.mag }}</span>
+      <span class="description ns-ellipsis">{% if p.when contains "rises" %}rises {{ p.rise }}{% else %}best {{ p.best_time }}{% endif %}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <span class="description">None in a dark sky tonight.</span>
+    {% endif %}
+    {% if highlights.size > 0 %}
+    <div class="ns-hl">{% render "hl_icon", icon: highlights[0].icon %}<span class="description ns-ellipsis">{{ highlights[0].text }}</span></div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="title_bar">
+  <span class="title">Night Sky</span>
+  <span class="instance">{{ meta.label }} · {{ meta.chart_time }}</span>
+</div>

@@ -1,0 +1,30 @@
+{% if meta %}
+<div class="layout layout--col layout--top gap--small">
+  <div class="ns-row" style="justify-content: center;">
+    {% render "sky_chart", chart: chart, px: 300, sizes: "6,5,4,3,2,1", tags: "planets", compass: true %}
+  </div>
+
+  <div class="ns-row">
+    <span class="value value--large value--tnums ns-score">{{ score.value }}<span class="value value--xsmall">/10</span></span>
+    <div class="ns-col ns-grow">
+      <span class="title title--small">{{ score.verdict }} night</span>
+      {% render "score_bar", value: score.value %}
+    </div>
+    {% render "moon_icon", moon: moon, size: 36 %}
+  </div>
+
+  <div class="ns-times">
+    <span class="label label--small">Set</span><span class="label label--small">Dark</span>
+    <span class="label label--small">Dawn</span><span class="label label--small">Rise</span>
+    <span class="value value--xxsmall value--tnums">{{ sun.set | default: "—" }}</span>
+    <span class="value value--xxsmall value--tnums">{{ sun.dusk | default: "—" }}</span>
+    <span class="value value--xxsmall value--tnums">{{ sun.dawn | default: "—" }}</span>
+    <span class="value value--xxsmall value--tnums">{{ sun.rise | default: "—" }}</span>
+  </div>
+</div>
+{% endif %}
+
+<div class="title_bar">
+  <span class="title">Night Sky</span>
+  <span class="instance">{{ meta.label }} · {{ meta.chart_time }}</span>
+</div>

@@ -1,0 +1,78 @@
+{% if meta %}
+<div class="layout layout--row layout--left layout--stretch-y gap--large">
+  {% render "sky_chart", chart: chart, px: 400, sizes: "7,5,4,3,2,1", tags: "all", compass: true %}
+
+  <div class="ns-col ns-grow">
+    {%- comment -%} headline: tonight's stargazing score {%- endcomment -%}
+    <div class="ns-row">
+      <span class="value value--xxlarge value--tnums ns-score">{{ score.value }}<span class="value value--small">/10</span></span>
+      <div class="ns-col ns-grow">
+        <span class="title">{{ score.verdict }} night</span>
+        {% render "score_bar", value: score.value %}
+        <span class="description">
+          {% if score.clouds != nil %}{{ score.clouds }}% clouds · {% endif %}{{ score.dark_h }}h {{ score.dark_m }}m dark
+        </span>
+      </div>
+    </div>
+
+    <div class="ns-hr"></div>
+
+    <div class="ns-times">
+      <span class="label label--small">Sunset</span><span class="label label--small">Dark</span>
+      <span class="label label--small">Dawn</span><span class="label label--small">Sunrise</span>
+      <span class="value value--xsmall value--tnums">{{ sun.set | default: "—" }}</span>
+      <span class="value value--xsmall value--tnums">{{ sun.dusk | default: "—" }}</span>
+      <span class="value value--xsmall value--tnums">{{ sun.dawn | default: "—" }}</span>
+      <span class="value value--xsmall value--tnums">{{ sun.rise | default: "—" }}</span>
+    </div>
+
+    <div class="ns-hr ns-hr--dot"></div>
+
+    <div class="ns-row">
+      {% render "moon_icon", moon: moon, size: 44 %}
+      <div class="ns-col ns-grow">
+        <span class="title title--small">{{ moon.phase }} · {{ moon.illum }}%</span>
+        <span class="description ns-ellipsis">
+          {% if moon.rise %}Rises {{ moon.rise }}{% endif %}{% if moon.rise and moon.set %} · {% endif %}{% if moon.set %}Sets {{ moon.set }}{% endif %}
+        </span>
+        <span class="description ns-ellipsis">
+          {% if score.moon_free %}Moon-free dark {{ score.moon_free }}{% else %}Moonlit all night{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="ns-hr ns-hr--dot"></div>
+
+    <span class="label label--small label--underline">Planets tonight</span>
+    {% if visible_count > 0 %}
+    <div class="ns-planets">
+      {% for p in visible limit: 4 %}
+      <span class="title title--small">{{ p.name }}</span>
+      <span class="label label--small label--outline">{{ p.mag }}</span>
+      <span class="description ns-ellipsis">{{ p.when }}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <span class="description">No bright planets in a dark sky tonight.</span>
+    {% endif %}
+
+    {% if highlights.size > 0 %}
+    <div class="ns-hr ns-hr--dot"></div>
+    {% for h in highlights limit: 2 %}
+    <div class="ns-hl">{% render "hl_icon", icon: h.icon %}<span class="description ns-ellipsis">{{ h.text }}</span></div>
+    {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="layout layout--col layout--center">
+  <span class="title">Night Sky</span>
+  <span class="description">Set your location in the plugin settings.</span>
+</div>
+{% endif %}
+
+<div class="title_bar">
+  <svg class="image" width="26" height="26" viewBox="0 0 26 26"><path d="M13 1 L15.5 10.5 L25 13 L15.5 15.5 L13 25 L10.5 15.5 L1 13 L10.5 10.5 Z" fill="#000"/></svg>
+  <span class="title">Night Sky</span>
+  <span class="instance">{{ meta.label }} · {% if meta.chart_label == "tonight" %}tonight at {{ meta.chart_time }}{% else %}{{ meta.date }} {{ meta.chart_time }}{% endif %}</span>
+</div>
